@@ -13,7 +13,7 @@ import math
 import streamlit as st
 # Load data
 showWarningOnDirectExecution = False
-st.set_option('deprecation.showPyplotGlobalUse', False)
+# st.set_option('deprecation.showPyplotGlobalUse', False)
 st.title("Trading Strategy")
 st.text("Welcome!")
 activities=["US Stocks","Indian Stocks"]
@@ -22,16 +22,27 @@ if choice=="US Stocks":
     activities=["MNST","AAPL","MSFT","SPY","AMZN","GOOGL","JNJ","GOOG","UNH","XOM","JPM","NVDA","BRK.B","PG","V","HD","CVX","MA","LLY","ABBV","PFE","MRK","META","PEP","KO","BAC"]
 if choice=="Indian Stocks":
     activities=["TCS.NS","ITC.NS","TATAMOTORS.NS","HINDALCO.NS","ONGC.NS","TATASTEEL.NS","COALINDIA.NS","JSWSTEEL.NS","WIPRO.NS","BPCL.NS","YESBANK.NS","IDEA.NS","PNB.NS","IOC.NS","ZOMATO.NS","UCOBANK.NS","IRFC.NS","HCC.NS","IDBI.NS"]
+
 choice=st.sidebar.selectbox("Select Stock",activities)
 st.write("1m gives data worth of 7 days")
 st.write("2m,5m,15m,30m,90m gives data worth of 60 days")
 st.write("1h gives data worth of 730 days")
+
 intervals=["1d","1m", "2m", "5m", "15m", "30m", "60m", "90m", "1h", "5d", "1wk", "1mo", "3mo"]
 interval=st.selectbox("Select time interval for stock data",intervals)
+
 period=["1000d","1d", "2d","5d", "7d", "15d", "30d", "60d", "90d", "200d", "500d",  "2000d", "5000d", "7000d","10000d"]
 periods=st.selectbox("Select time period for stock data",period)
-# period=st.slider("historical_data_period", min_value=1, max_value=7000, value=5000)
-data = yf.download(tickers=choice, period=periods, interval=interval)
+
+# Download data with auto_adjust to prevent MultiIndex columns
+data = yf.download(tickers=choice, period=periods, interval=interval, auto_adjust=True, progress=False)
+
+# Safety check: Flatten any remaining MultiIndex columns
+if isinstance(data.columns, pd.MultiIndex):
+    data.columns = data.columns.get_level_values(0)
+
+# Reset index to ensure clean DataFrame
+data = data.reset_index(drop=False)
 #Print data
 data
 
@@ -40,9 +51,9 @@ data
 
 
 import matplotlib.pyplot as plt
-plt.figure(figsize=(20,12))
+fig1 = plt.figure(figsize=(20,12))
 plt.plot(data.Close)
-st.pyplot(fig=None, clear_figure=None)
+st.pyplot(fig=fig1, clear_figure=None)
 
 
 # In[111]:
@@ -250,16 +261,16 @@ def macrossover(data,fast_period,slow_period,init_cash,transaction_cost,stop_los
     avp=avp/postr
     maslow=data.Close.rolling(slow_period).mean()
     mafast=data.Close.rolling(fast_period).mean()
-    plt.figure(figsize=(20,12))
+    fig2 = plt.figure(figsize=(20,12))
     plt.plot(data.Close)
     plt.plot(maslow,'r')
     plt.plot(mafast,'g')
-    st.pyplot(fig=None, clear_figure=None)
+    st.pyplot(fig=fig2, clear_figure=None)
     df=data
     df['Signal'] = 0.0
     df['Signal'] = np.where(df['fast'] > df['slow'], 1.0, 0.0)
     df['Position'] = df['Signal'].diff()
-    plt.figure(figsize = (20,10))
+    fig3 = plt.figure(figsize = (20,10))
     df['Close'].plot(color = 'k', label= 'Close Price') 
     df['fast'].plot(color = 'b',label = 'fast SMA') 
     df['slow'].plot(color = 'g', label = 'slow SMA')
@@ -277,7 +288,7 @@ def macrossover(data,fast_period,slow_period,init_cash,transaction_cost,stop_los
     plt.legend()
     plt.grid()
     plt.show()
-    st.pyplot(fig=None, clear_figure=None)
+    st.pyplot(fig=fig3, clear_figure=None)
 #     plt.plot(ma25,'y')
     sharpe=sharpe_ratio(data['Close'])
     st.write("Total Transaction ",trades)
@@ -362,8 +373,8 @@ def bb(data,bb_period,rsi_period,rsis,rsib,init_cash):
     data['BOLD'].plot(label = 'LOWER BB ', linestyle = '--', linewidth = 1, color = 'black')
     plt.legend(loc = 'upper left')
     plt.title('BOLLINGER BANDS')
-    plt.show()
-    st.pyplot(fig=None, clear_figure=None)
+    fig5=plt.show()
+    st.pyplot(fig=fig5, clear_figure=None)
     sharpe=sharpe_ratio(data['Close'])
     st.write("Profit ",fp)
     st.write("Profit Percent",(fp/init_cash)*100)
@@ -441,15 +452,15 @@ def emacrossover3(data,fast1,fast2,fast3,slow,init_cash):
     fast2 = ema(data, fast2)
     fast3 = ema(data,fast3)
     slow = ema(data, slow)
-    plt.figure(figsize=(20,12))
+    fig6=plt.figure(figsize=(20,12))
     plt.plot(data.Close)
     plt.plot(fast1,'r')
     plt.plot(fast2,'g')
     plt.plot(fast3,'y')
     plt.plot(slow,'b')
-    st.pyplot(fig=None, clear_figure=None)
+    st.pyplot(fig=fig6, clear_figure=None)
     df['Position'] = df['Signal'].diff()
-    plt.figure(figsize = (20,10))
+    fig7=plt.figure(figsize = (20,10))
     df['Close'].plot(color = 'k', label= 'Close Price') 
     df['fast1'].plot(color = 'b',label = 'fast1 SMA') 
     df['fast2'].plot(color = 'y',label = 'fast2 SMA')
@@ -469,7 +480,7 @@ def emacrossover3(data,fast1,fast2,fast3,slow,init_cash):
     plt.legend()
     plt.grid()
     plt.show()
-    st.pyplot(fig=None, clear_figure=None)
+    st.pyplot(fig=fig7, clear_figure=None)
     st.write("Profit ",fp)
     st.write("Profit Percent",(fp/init_cash)*100)
     sharpe=sharpe_ratio(data['Close'])
@@ -526,10 +537,10 @@ def plot_macd(prices, macd, signal, hist):
         else:
             ax2.bar(prices.index[i], hist[i], color = '#26a69a')
 
-    plt.legend(loc = 'lower right')
+    fig8=plt.legend(loc = 'lower right')
 
     plot_macd(googl['close'], googl_macd['macd'], googl_macd['signal'], googl_macd['hist'])
-    st.pyplot(fig=None, clear_figure=None)
+    st.pyplot(fig=fig8, clear_figure=None)
 
      
     
@@ -613,9 +624,10 @@ def macd(price,slow,fast,smooth):
             else:
                 ax2.bar(prices.index[i], hist[i], color = '#26a69a')
 
-        plt.legend(loc = 'lower right')
-    plot_macd(data['Close'], data['macd'], data['signal'], data['hist'])
-    st.pyplot(fig=None, clear_figure=None)
+        fig11=plt.legend(loc = 'lower right')
+        return fig11
+    fig12=plot_macd(data['Close'], data['macd'], data['signal'], data['hist'])
+    st.pyplot(fig=fig12, clear_figure=None)
     def implement_macd_strategy(prices, data):    
         buy_price = []
         sell_price = []
@@ -669,8 +681,8 @@ def macd(price,slow,fast,smooth):
             ax2.bar(data.index[i], data['hist'][i], color = '#26a69a')
 
     plt.legend(loc = 'lower right')
-    plt.show()
-    st.pyplot(fig=None, clear_figure=None)
+    fig9=plt.show()
+    st.pyplot(fig=fig9, clear_figure=None)
     position = []
     for i in range(len(macd_signal)):
         if macd_signal[i] > 1:
@@ -797,8 +809,8 @@ def bollinger_bands_fibonacci_strategy(data,length,stdDev,init_cash):
     plt.xlabel('Time')
     plt.ylabel('Price')
     plt.legend()
-    plt.show()
-    st.pyplot(fig=None, clear_figure=None)
+    fig10=plt.show()
+    st.pyplot(fig=fig10, clear_figure=None)
     st.write("Profit ",profit)
     st.write("Profit Percent",(profit/init_cash)*100)
     sharpe=sharpe_ratio(data['Close'])
