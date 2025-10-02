@@ -1,10 +1,11 @@
 autocalc==0.2.1
 ipywidgets==7.6.5
-matplotlib==3.6.3
+matplotlib
 numpy
 pandas
 streamlit
 yfinance
+
 
 
 
