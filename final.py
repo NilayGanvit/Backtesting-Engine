@@ -85,7 +85,7 @@ def rsi(df, period):
 
 def sto(close, low, high, n,id): 
     stok = ((close - low.rolling(n).min()) / (high.rolling(n).max() - low.rolling(n).min())) * 100
-    if(id is 0):
+    if(id == 0):
         return stok
     else:
         return stok.rolling(3).mean()
@@ -287,7 +287,6 @@ def macrossover(data,fast_period,slow_period,init_cash,transaction_cost,stop_los
     plt.title('MAC', fontsize = 20)
     plt.legend()
     plt.grid()
-    plt.show()
     st.pyplot(fig=fig3, clear_figure=None)
 #     plt.plot(ma25,'y')
     sharpe=sharpe_ratio(data['Close'])
@@ -373,7 +372,7 @@ def bb(data,bb_period,rsi_period,rsis,rsib,init_cash):
     data['BOLD'].plot(label = 'LOWER BB ', linestyle = '--', linewidth = 1, color = 'black')
     plt.legend(loc = 'upper left')
     plt.title('BOLLINGER BANDS')
-    fig5=plt.show()
+    fig5=plt.gcf()
     st.pyplot(fig=fig5, clear_figure=None)
     sharpe=sharpe_ratio(data['Close'])
     st.write("Profit ",fp)
@@ -479,7 +478,6 @@ def emacrossover3(data,fast1,fast2,fast3,slow,init_cash):
     plt.title('MAC', fontsize = 20)
     plt.legend()
     plt.grid()
-    plt.show()
     st.pyplot(fig=fig7, clear_figure=None)
     st.write("Profit ",fp)
     st.write("Profit Percent",(fp/init_cash)*100)
@@ -537,7 +535,7 @@ def plot_macd(prices, macd, signal, hist):
         else:
             ax2.bar(prices.index[i], hist[i], color = '#26a69a')
 
-    fig8=plt.legend(loc = 'lower right')
+    fig8=plt.gcf()
 
     plot_macd(googl['close'], googl_macd['macd'], googl_macd['signal'], googl_macd['hist'])
     st.pyplot(fig=fig8, clear_figure=None)
@@ -624,7 +622,8 @@ def macd(price,slow,fast,smooth):
             else:
                 ax2.bar(prices.index[i], hist[i], color = '#26a69a')
 
-        fig11=plt.legend(loc = 'lower right')
+        plt.legend(loc = 'lower right')
+        fig11=plt.gcf()
         return fig11
     fig12=plot_macd(data['Close'], data['macd'], data['signal'], data['hist'])
     st.pyplot(fig=fig12, clear_figure=None)
@@ -681,7 +680,7 @@ def macd(price,slow,fast,smooth):
             ax2.bar(data.index[i], data['hist'][i], color = '#26a69a')
 
     plt.legend(loc = 'lower right')
-    fig9=plt.show()
+    fig9=plt.gcf()
     st.pyplot(fig=fig9, clear_figure=None)
     position = []
     for i in range(len(macd_signal)):
@@ -709,7 +708,6 @@ def macd(price,slow,fast,smooth):
 
     strategy
     from math import floor
-    import pyopencl as cl
     ret = pd.DataFrame(np.diff(data['Close'])).rename(columns = {0:'returns'})
     macd_strategy_ret = []
 
@@ -809,7 +807,7 @@ def bollinger_bands_fibonacci_strategy(data,length,stdDev,init_cash):
     plt.xlabel('Time')
     plt.ylabel('Price')
     plt.legend()
-    fig10=plt.show()
+    fig10=plt.gcf()
     st.pyplot(fig=fig10, clear_figure=None)
     st.write("Profit ",profit)
     st.write("Profit Percent",(profit/init_cash)*100)
