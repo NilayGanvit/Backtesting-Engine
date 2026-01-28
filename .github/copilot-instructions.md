@@ -39,13 +39,56 @@ All strategies follow this pattern:
 - Color conventions: green=buy signals (^), red=sell signals (v)
 - Plotting libraries used: matplotlib (strategy), st.pyplot() (display)
 
-## Developer Workflows
+## Configuration & Setup
+
+### Environment Configuration
+```bash
+# 1. Create virtual environment
+python3 -m venv .venv
+
+# 2. Activate virtual environment
+# Linux/Mac
+source .venv/bin/activate
+# Windows
+.venv\Scripts\activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. (Optional) Fix protobuf compatibility issue
+pip install 'protobuf==3.20.0'
+```
 
 ### Running the App
+
+**Standard command** (if protobuf is configured correctly):
 ```bash
 streamlit run final.py
 ```
-Select country → stock → timeframe/period → choose strategy from sidebar → adjust parameters
+
+**With protobuf workaround** (recommended for Python 3.12+):
+```bash
+PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python streamlit run final.py
+```
+
+**Using virtual environment directly**:
+```bash
+PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python .venv/bin/streamlit run final.py
+```
+
+**Application access**: http://localhost:8501
+
+### Usage Workflow
+1. Select country (US Stocks or Indian Stocks)
+2. Choose a stock ticker from the dropdown
+3. Select time interval (1m, 5m, 1h, 1d, etc.) and period (7d, 60d, 200d, etc.)
+4. Pick a trading strategy from the sidebar dropdown
+5. Adjust strategy parameters using sliders
+6. View backtest results, charts, and performance metrics
+
+## Developer Workflows
+
+### Adding a New Strategy
 
 ### Adding a New Strategy
 1. Create function `def new_strategy(data, param1, param2, init_cash):`
